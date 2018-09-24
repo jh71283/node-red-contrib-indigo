@@ -1,0 +1,41 @@
+export interface Device {
+    lastChangedTimeStr:       string;
+    lastChangedRFC822:        string;
+    typeIsMultiIO:            boolean;
+    hasStateToDisplay:        boolean;
+    typeIsDimmer:             boolean;
+    typeSupportsEnergyMeter:  boolean;
+    typeSupportsIO:           boolean;
+    addressStr:               string;
+    id:                       number;
+    typeSupportsHVAC:         boolean;
+    typeFlags:                number;
+    typeIsSensor:             boolean;
+    typeSupportsOnOff:        boolean;
+    isOn:                     boolean;
+    typeIsSprinkler:          boolean;
+    lastChanged:              number;
+    typeIsSpeedControl:       boolean;
+    typeIsLock:               boolean;
+    type:                     string;
+    classID:                  number;
+    versByte:                 number;
+    typeSupportsSensorValue:  boolean;
+    typeSupportsSpeedControl: boolean;
+    displayInUI:              boolean;
+    displayLongState:         string;
+    restParent:               string;
+    address:                  number;
+    displayRawState:          number;
+    typeIsOpenClose:          boolean;
+    name:                     string;
+    brightness:               number;
+    typeSupportsDim:          boolean;
+    lastChangedDateStr:       string;
+    lastChangedRFC3339:       string;
+    typeIsHVAC:               boolean;
+    devProtocol:              number;
+    folderID:                 number;
+    typeSupportsSprinkler:    boolean;
+}
+

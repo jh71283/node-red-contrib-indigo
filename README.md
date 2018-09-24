@@ -1,20 +1,20 @@
-# node-red-contrib-openhab2
+# node-red-contrib-indigo
 ## Description
 
-Nodes facilitating the automation of *openHAB* ( <http://www.openhab.org> ) items with Node-RED ( <http://nodered.org> ).
+Nodes facilitating the automation of *Indigo* ( <http://www.indigo.org> ) items with Node-RED ( <http://nodered.org> ).
 
 ## Installation
 
 ```
 $ cd ~/.node-red
-$ npm install node-red-contrib-openhab2
+$ npm install node-red-contrib-indigo
 ```
 
 ## Nodes
 
-##### - openhab2-controller
+##### - indigo-controller
 
-Configuration node for communication with an openHAB controller.
+Configuration node for communication with an Indigo controller.
 
 *Configuration:*
 - Name : Specify a name for the configuration node
@@ -25,13 +25,13 @@ Configuration node for communication with an openHAB controller.
 - Username : (Optionally) Specify the username to authenticate
 - Password : (Optionally) Specify the password to authenticate
 
-##### - openhab2-in
+##### - indigo-in
 
-Listens to state changes of a selected openHAB Item.
+Listens to state changes of a selected Indigo Item.
 
 *Configuration:*
 - Name : Optionally specify a name
-- Controller : Select the openHAB controller
+- Controller : Select the Indigo controller
 - Item : Select the Item to monitor
 
 *Messages injected in NodeRED flows (2 channels):*
@@ -46,13 +46,13 @@ Channel 2:
 - <kbd>msg.topic</kbd> : "RawEvent"
 - <kbd>msg.payload</kbd> :  raw (unprocessed) event for the selected item
 
-##### - openhab2-monitor
+##### - indigo-monitor
 
-Monitors the openhab2-controller node.
+Monitors the indigo-controller node.
 
 *Configuration:*
 - Name : Optionally specify a name
-- Controller : Select the openHAB controller
+- Controller : Select the Indigo controller
 
 *Messages injected in NodeRED flows (3 channels):*
 
@@ -68,14 +68,14 @@ Channel 3:
 - <kbd>msg.topic</kbd> : "RawEvent"
 - <kbd>msg.payload</kbd> :  raw (unprocessed) event for all items
 
-##### - openhab2-out
+##### - indigo-out
 
-Sends commands or state updates to a selected openHAB Item.
+Sends commands or state updates to a selected Indigo Item.
 E.g. "ON", "OFF", "REFRESH", ... 
 
 *Configuration:*
 - Name : Optionally specify a name
-- Controller : Select the openHAB controller
+- Controller : Select the Indigo controller
 - Item :  Optionally select the Item to address. If specified, it overrides the item specified in the incoming message.
 - Topic : Optionally select "ItemCommand" or "ItemUpdate". If specified, it overrides the topic specified in the incoming message. 
 - Payload : Optionally specify the command or update value to send to the selected item. If specified, it overrides the payload specified in the incoming message.
@@ -87,13 +87,13 @@ E.g. "ON", "OFF", "REFRESH", ...
 - <kbd>msg.topic</kbd> :  optionally "ItemCommand", "ItemUpdate"
 - <kbd>msg.payload</kbd> : optionally the fixed command or update value to send to the selected item
 
-##### - openhab2-get
+##### - indigo-get
 
-Gets an openHAB Item on an input message.
+Gets an Indigo Item on an input message.
 
 *Configuration:*
 - Name : Optionally specify a name
-- Controller : Select the openHAB controller
+- Controller : Select the Indigo controller
 - Item : Optionally select the Item to get. If specified, it overrides the item specified in the incoming message.
 
 *Messages accepted by NodeRED flows:*
