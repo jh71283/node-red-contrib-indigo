@@ -1,6 +1,6 @@
 /*
 
-  openHAB nodes for IBM's Node-Red
+  Indigo nodes for IBM's Node-Red
   https://github.com/pdmangel/node-red-contrib-indigo
   (c) 2017, Peter De Mangelaere <peter.demangelaere@gmail.com>
 
@@ -66,7 +66,7 @@ module.exports = function(RED) {
 	/**
 	* ====== indigo-controller ================
 	* Holds the hostname and port of the  
-	* openHAB server
+	* Indigo server
 	* ===========================================
 	*/
 	function IndigoControllerNode(config) {
@@ -252,9 +252,9 @@ module.exports = function(RED) {
 	}
     RED.nodes.registerType("indigo-controller", IndigoControllerNode);
 
-  // start a web service for enabling the node configuration ui to query for available openHAB items
+  // start a web service for enabling the node configuration ui to query for available Indigo items
     
-	RED.httpNode.get("/indigo/items",function(req, res, next) {
+	RED.httpNode.get("/indigo/devices",function(req, res, next) {
 		var config = req.query;
 		var url = getConnectionString(config) + '/rest/items';
 		request.get(url, function(error, response, body) {
@@ -270,6 +270,42 @@ module.exports = function(RED) {
 		});
 
 	});
+
+	RED.httpNode.get("/indigo/variables",function(req, res, next) {
+		var config = req.query;
+		var url = getConnectionString(config) + '/rest/items';
+		request.get(url, function(error, response, body) {
+			if ( error ) {
+				res.send("request error '" + JSON.stringify(error) + "' on '" + url + "'");
+			}
+			else if ( response.statusCode != 200 ) {
+				res.send("response error '" + JSON.stringify(response) + "' on '" + url + "'");
+			}
+			else {
+				res.send(body);
+			}
+		});
+
+	});
+
+	RED.httpNode.get("/indigo/actions",function(req, res, next) {
+		var config = req.query;
+		var url = getConnectionString(config) + '/rest/items';
+		request.get(url, function(error, response, body) {
+			if ( error ) {
+				res.send("request error '" + JSON.stringify(error) + "' on '" + url + "'");
+			}
+			else if ( response.statusCode != 200 ) {
+				res.send("response error '" + JSON.stringify(response) + "' on '" + url + "'");
+			}
+			else {
+				res.send(body);
+			}
+		});
+
+	});
+
+	
 	
 	/**
 	* ====== indigo-in ========================
@@ -459,7 +495,7 @@ module.exports = function(RED) {
 			
             if ( payload != undefined )
 			{				
-	            // execute the appropriate http POST to send the command to openHAB
+	            // execute the appropriate http POST to send the command to Indigo
 				// and update the node's status according to the http response
 				
 				indigoController.control(item, topic, payload,

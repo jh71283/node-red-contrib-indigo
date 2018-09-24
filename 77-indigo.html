@@ -1,6 +1,6 @@
 <!--
 
-  openHAB nodes for IBM's Node-Red
+  Indigo nodes for IBM's Node-Red
   https://github.com/pdmangel/node-red-contrib-indigo
   (c) 2017, Peter De Mangelaere <peter.demangelaere@gmail.com>
 
@@ -132,7 +132,7 @@
 </script>
 
 <script type="text/x-red" data-help-name="indigo-controller">
-    <p>Configuration node for communication with an openHAB controller.</p>
+    <p>Configuration node for communication with an Indigo controller.</p>
 	<p></p>
 	<b>Configuration</b>
     <ul>
@@ -146,12 +146,12 @@
 </script>
 
 <script type="text/x-red" data-help-name="indigo-in">
-    <p>Listens to state changes of a selected openHAB Item.</p>
+    <p>Listens to state changes of a selected Indigo Item.</p>
 	<p></p>
 	<b>Configuration</b>
     <ul>
         <li><b>Name :</b> Optionally specify a name</li>
-        <li><b>Controller :</b> Select the openHAB controller</li>
+        <li><b>Controller :</b> Select the Indigo controller</li>
         <li><b>Item :</b>Select the Item to monitor</li>
    	 </ul>
 	<p></p>
@@ -165,24 +165,18 @@
         		<li><code>msg.payload</code> : the new state of the selected item</li>
   	 		</ul>
 		</li>
-        <li>Channel 2 :
-			<ul>
-        		<li><code>msg.item</code> : the item's itemname (not label)</li>
-        		<li><code>msg.topic</code> : "RawEvent"</li>
-        		<li><code>msg.payload</code> : raw (unprocessed) event for the selected item</li>
-  	 		</ul>
-		</li>
+
 
    	 </ul>
 </script>
 
 <script type="text/x-red" data-help-name="indigo-get">
-    <p>Gets an openHAB Item on an input message.</p>
+    <p>Gets an Indigo Item on an input message.</p>
 	<p></p>
 	<b>Configuration</b>
     <ul>
         <li><b>Name :</b> Optionally specify a name</li>
-        <li><b>Controller :</b> Select the openHAB controller</li>
+        <li><b>Controller :</b> Select the Indigo controller</li>
         <li><b>Item :</b> Optionally select the Item to address. If specified, it overrides the item specified in the incoming message.</li>
    	 </ul>
 	<p></p>
@@ -201,7 +195,7 @@
 	<b>Configuration</b>
     <ul>
         <li><b>Name :</b> Optionally specify a name</li>
-        <li><b>Controller :</b> Select the openHAB controller</li>
+        <li><b>Controller :</b> Select the Indigo controller</li>
    	 </ul>
 	<p></p>
 	<b>Messages accepted by NodeRED flows</b>
@@ -237,13 +231,13 @@
 
 
 <script type="text/x-red" data-help-name="indigo-out">
-    <p>Sends commands or state updates to a selected openHAB Item.</p>
+    <p>Sends commands or state updates to a selected Indigo Item.</p>
     <p>E.g. "ON", "OFF", "REFRESH", ... </p>
 	<p></p>
 	<b>Configuration</b>
     <ul>
         <li><b>Name :</b> Optionally specify a name</li>
-        <li><b>Controller :</b> Select the openHAB controller</li>
+        <li><b>Controller :</b> Select the Indigo controller</li>
         <li><b>Item :</b> Optionally select the Item to address. If specified, it overrides the item specified in the incoming message.</li>
         <li><b>Topic :</b> Optionally select "ItemCommand" or "ItemUpdate". If specified, it overrides the topic specified in the incoming message.</li>
         <li><b>Payload :</b> Optionally specify the command or update value to send to the selected item. If specified, it overrides the value specified in the incoming message.</li>
@@ -263,7 +257,7 @@
 	<b>Configuration</b>
     <ul>
         <li><b>Name :</b> Optionally specify a name</li>
-        <li><b>Controller :</b> Select the openHAB controller</li>
+        <li><b>Controller :</b> Select the Indigo controller</li>
    	 </ul>
 	<p></p>
 </script>
@@ -293,7 +287,7 @@
 	
 	function indigoEditPrepare(node, allowEmpty) {
 
-    	function updateOpenhabItemSelection(cntrlConfig, itemName) {
+    	function updateIndigoItemSelection(cntrlConfig, itemName) {
 
     		var itemSelectionEl = $('#node-input-itemname');
 
@@ -341,10 +335,10 @@
             }
 		}
 
-    	updateOpenhabItemSelection(RED.nodes.node(node.controller), node.itemname);
+    	updateIndigoItemSelection(RED.nodes.node(node.controller), node.itemname);
 
 		$('#node-input-controller').change(function(ev) {
-	        updateOpenhabItemSelection(RED.nodes.node($('#node-input-controller').val()), $('#node-input-').val() || node.itemname);
+	        updateIndigoItemSelection(RED.nodes.node($('#node-input-controller').val()), $('#node-input-').val() || node.itemname);
 		});
 
 
