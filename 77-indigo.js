@@ -17,8 +17,8 @@
   limitations under the License.
   
 */
-//var EventSource = require('@joeybaker/eventsource');
-var request = require('indigodomo-node');
+var EventSource = require('@joeybaker/eventsource');
+var indigodomo = require('indigodomo-node');
 
 function getConnectionString(config) {
 	var url;
@@ -70,6 +70,8 @@ module.exports = function(RED) {
 	* ===========================================
 	*/
 	function IndigoControllerNode(config) {
+		console.log('controller node initialised')
+		indigodomo.init(config.protocol + "://" + config.host, config.port,config.username, config.password )
 		RED.nodes.createNode(this, config);
 		
 		this.getConfig = function () {
@@ -82,50 +84,23 @@ module.exports = function(RED) {
 		
 		// this controller node handles all communication with the configured indigo server
 
-		
+		this.connection = function(){
+			return indigodomo;
+		}
+
 		function getStateOfItems(config) {
+			return;
 			node.log("getStateOfItems : config = " + JSON.stringify(config));
 			
-            var url = getConnectionString(config) + "/rest/items";
-			request.get(url, function(error, response, body) {
-            	// handle communication errors
-        		if ( error ) {
-        			node.warn("request error '" + error  + "' on '" + url + "'");
-					node.emit('CommunicationError', error);
-        		}
-        		else if ( response.statusCode == 503 )
-        		{
-					// indigo not fully ready .... retry after 5 seconds
-        			node.warn("response status 503 on '" + url + "' .... retry later");
-					node.emit('CommunicationError', response );
-					setTimeout(function() {
-						getStateOfItems(config);
-					}, 5000);
-        		}
-        		else if ( response.statusCode != 200 ) {
-        			node.warn("response error '" + JSON.stringify(response) + "' on '" + url + "'");
-					node.emit('CommunicationError', response);
-        		}
-        		else {
-        			// update the registered nodes with item state
-    				node.emit('CommunicationStatus', "ON");
-    				
-		    		var items = JSON.parse(body);
-		    		
-		    		items.forEach(function(item) {
-						node.emit(item.name + "/StateEvent", {type: "ItemStateEvent", state: item.state});
-		    		});
-		    		
-        		}
-           	});
+          
 			
 		}
 		
 		function startEventSource() {
-			
+			return;
 			// register for all item events
 			
-			//node.es= new EventSource(getConnectionString(config) + "/rest/events?topics=smarthome/items", {});
+			node.es= new EventSource(getConnectionString(config) + "/rest/events?topics=smarthome/items", {});
 			
 			// handle the 'onopen' event
 			
@@ -202,9 +177,28 @@ module.exports = function(RED) {
 	    //startEventSource();
 		// give the system few seconds 
 		setTimeout(function() {
+			
 			startEventSource();
 		}, 5000);
 
+		this.getDevice= function(name){
+			return indigodomo.GetDevice(name);
+		};
+		this.setDevice= function(name,key,value){
+			return indigodomo.SetDevicePropertyValue(name,key,value);
+		};
+		this.getVariable= function(name){
+			return indigodomo.GetVariable(name);
+		};
+		this.execAction= function(name){
+			return indigodomo.ExecuteActionGroup(name);
+		};
+		this.setVariable= function(name,value){
+			return indigodomo.SetVariable(name,value);
+		};
+		this.getActionGroup= function(name){
+			return indigodomo.GetActionGroup(name);
+		};
 		this.control = function(itemname, topic, payload, okCb, errCb) {
 			var url;
 			
@@ -255,55 +249,27 @@ module.exports = function(RED) {
   // start a web service for enabling the node configuration ui to query for available Indigo items
     
 	RED.httpNode.get("/indigo/devices",function(req, res, next) {
-		var config = req.query;
-		var url = getConnectionString(config) + '/rest/items';
-		request.get(url, function(error, response, body) {
-			if ( error ) {
-				res.send("request error '" + JSON.stringify(error) + "' on '" + url + "'");
-			}
-			else if ( response.statusCode != 200 ) {
-				res.send("response error '" + JSON.stringify(response) + "' on '" + url + "'");
-			}
-			else {
-				res.send(body);
-			}
-		});
+		console.log('getting devices')
+	
+		indigodomo.GetDevices().then((response)=> res.send(response))
+		
 
 	});
-
 	RED.httpNode.get("/indigo/variables",function(req, res, next) {
-		var config = req.query;
-		var url = getConnectionString(config) + '/rest/items';
-		request.get(url, function(error, response, body) {
-			if ( error ) {
-				res.send("request error '" + JSON.stringify(error) + "' on '" + url + "'");
-			}
-			else if ( response.statusCode != 200 ) {
-				res.send("response error '" + JSON.stringify(response) + "' on '" + url + "'");
-			}
-			else {
-				res.send(body);
-			}
-		});
+		console.log('getting variables')
+	
+		indigodomo.GetVariables().then((response)=> res.send(response))
+		
 
 	});
-
 	RED.httpNode.get("/indigo/actions",function(req, res, next) {
-		var config = req.query;
-		var url = getConnectionString(config) + '/rest/items';
-		request.get(url, function(error, response, body) {
-			if ( error ) {
-				res.send("request error '" + JSON.stringify(error) + "' on '" + url + "'");
-			}
-			else if ( response.statusCode != 200 ) {
-				res.send("response error '" + JSON.stringify(response) + "' on '" + url + "'");
-			}
-			else {
-				res.send(body);
-			}
-		});
+		console.log('getting actions')
+	
+		indigodomo.GetActionGroups().then((response)=> res.send(response))
+		
 
 	});
+	
 
 	
 	
@@ -386,152 +352,15 @@ module.exports = function(RED) {
 	//
 	RED.nodes.registerType("indigo-in", IndigoIn);
 	
-	
-	/**
-	* ====== indigo-monitor ===================
-	* Monitors connection status and errors of
-	* the associated indigo-controller
-	* ===========================================
-	*/
-	function IndigoMonitor(config) {
-		RED.nodes.createNode(this, config);
-		this.name = config.name;
-		var node = this;
-		var indigoController = RED.nodes.getNode(config.controller);
-		
-		this.refreshNodeStatus = function() {
-			var commError = node.context().get("CommunicationError");
-			var commStatus = node.context().get("CommunicationStatus");
-			
-			node.status({
-				fill: 	(commError.length == 0 ) ? "green" : "red" ,
-				shape: 	(commStatus == "ON" ) ? "dot" : "ring",
-				text:	(commError.length != 0) ? commError : commStatus});
-			
-		};
-		
-		this.processCommStatus = function(status) {
-			
-			// update node's context variable
 
-			node.context().set("CommunicationStatus", status);
-			if ( status == "ON" )
-				node.context().set("CommunicationError", "");
-			
-			// update node's visual status
-			node.refreshNodeStatus();
-			
-		    // inject the state in the node-red flow (channel 1)
-		    var msgid = RED.util.generateId();
-            node.send([{_msgid:msgid, payload: status, event: "CommunicationStatus"}, null, null]);
-		};
-		
-		this.processCommError = function(error) {
-			
-			// update node's context variable
-			node.context().set("CommunicationError", JSON.stringify(error));
-			
-			// update node's visual status
-			node.refreshNodeStatus();
-			
-		    // inject the error in the node-red flow (channel 2)
-		    var msgid = RED.util.generateId();
-            node.send([null, {_msgid:msgid, payload: error, event: "CommunicationError"}, null]);
-		};
 
-		this.processRawEvent = function(event) {
-		    // inject the state in the node-red flow (channel 3)
-		    var msgid = RED.util.generateId();
-            node.send([null, null, {_msgid:msgid, payload: event, event: "RawEvent"}]);
-			
-		};
-		
-		indigoController.addListener('CommunicationStatus', node.processCommStatus);
-		indigoController.addListener('CommunicationError', node.processCommError);
-		indigoController.addListener('RawEvent', node.processRawEvent);
-		node.context().set("CommunicationError", "");
-		node.context().set("CommunicationStatus", "?");
-		node.refreshNodeStatus();
-
-		/* ===== Node-Red events ===== */
-		this.on("input", function(msg) {
-			if (msg != null) {
-				
-			};
-		});
-		this.on("close", function() {
-			node.log('close');
-			indigoController.removeListener('CommunicationStatus', node.processCommStatus);
-			indigoController.removeListener('CommunicationError', node.processCommError);
-			indigoController.removeListener('RawEvent', node.processRawEvent);
-		});
-		
-	}
-	//
-	RED.nodes.registerType("indigo-monitor", IndigoMonitor);
-	
-	
-	/**
-	* ====== indigo-out ===================
-	* Sends outgoing commands or update from
+		/**
+	* ====== indigo-get-device ===================
+	* Gets the device data when
 	* messages received via node-red flows
 	* =======================================
 	*/
-	function IndigoOut(config) {
-		RED.nodes.createNode(this, config);
-		this.name = config.name;
-		var indigoController = RED.nodes.getNode(config.controller);
-		var node = this;
-		
-		//node.log('new IndigoOut, config: ' + JSON.stringify(config));
-
-		// handle incoming node-red message
-		this.on("input", function(msg) {
-
-			// if a item/topic/payload is specified in the node's configuration, it overrides the item/topic/payload specified in the message
-            var item = (config.itemname && (config.itemname.length != 0)) ? config.itemname : msg.item;
-            var topic = (config.topic && (config.topic.length != 0)) ? config.topic : msg.topic;
-            var payload = (config.payload && (config.payload.length != 0)) ? config.payload : msg.payload;
-			
-            if ( payload != undefined )
-			{				
-	            // execute the appropriate http POST to send the command to Indigo
-				// and update the node's status according to the http response
-				
-				indigoController.control(item, topic, payload,
-									function(body){
-										// no body expected for a command or update
-	                					node.status({fill:"green", shape: "dot", text: " "});
-									},
-									function(err) {
-	                					node.status({fill:"red", shape: "ring", text: err});
-	                					node.warn(String(err));
-									}
-				);
-	            
-			}
-			else
-			{
-				// no payload specified !
-                node.status({fill:"red", shape: "ring", text: "no payload specified"});
-				node.warn('onInput: no payload specified');
-			}
-
-		});
-		this.on("close", function() {
-			node.log('close');
-		});
-	}
-	//
-	RED.nodes.registerType("indigo-out", IndigoOut);
-
-	/**
-	* ====== indigo-get ===================
-	* Gets the item data when
-	* messages received via node-red flows
-	* =======================================
-	*/
-	function IndigoGet(config) {
+	function IndigoSetDevice(config) {
 		RED.nodes.createNode(this, config);
 		this.name = config.name;
 		var indigoController = RED.nodes.getNode(config.controller);
@@ -541,131 +370,162 @@ module.exports = function(RED) {
 		this.on("input", function(msg) {
 
             var item = (config.itemname && (config.itemname.length != 0)) ? config.itemname : msg.item;
-
-            indigoController.control(item, null, null,
-								function(body){
-									// no body expected for a command or update
-                					node.status({fill:"green", shape: "dot", text: " "});
+			var key = (config.key && (config.key.length != 0)) ? config.key : msg.topic;
+			var value = msg.payload;
+			
+			indigoController.setDevice(item, key,value)
+				.then((res) => {
+					
+					node.status({fill:"green", shape: "dot", text: " "});
                 					msg.payload_in = msg.payload;
-                					msg.payload = JSON.parse(body);
-                					node.send(msg);
-								},
-								function(err) {
-                					node.status({fill:"red", shape: "ring", text: err});
-                					node.warn(err);
-								}
-			);
+                					msg.payload = JSON.parse(JSON.stringify(res));
+                					node.send(msg);})
+				.catch((err)=>{	
+					node.status({fill:"red", shape: "ring", text: err});
+                					node.warn(err);})
+            
+			
 		});
 		this.on("close", function() {
 			node.log('close');
 		});
 	}
 	//
-	RED.nodes.registerType("indigo-get", IndigoGet);
+	RED.nodes.registerType("indigo-set-device", IndigoSetDevice);
+
+
+
 
 	/**
-	* ====== indigo-events ===================
-	* monitors opnHAB events
+	* ====== indigo-get-device ===================
+	* Gets the device data when
+	* messages received via node-red flows
 	* =======================================
 	*/
-	function IndigoEvents(config) {
+	function IndigoGetDevice(config) {
 		RED.nodes.createNode(this, config);
 		this.name = config.name;
 		var indigoController = RED.nodes.getNode(config.controller);
 		var node = this;
 		
-		function startEventSource() {
-			
-			if ( indigoController == null )
-			{
-			node.error("Invalid controller");
-			return;
-			}
-			
-			// register for all item events
-			
-			
-			//node.es = new EventSource(getConnectionString(indigoController.getConfig()) + "/rest/events?topics=smarthome/*/*", {});
-			
-			// handle the 'onopen' event
-			
-			node.status({fill:"green", shape: "ring", text: " "});
-			
-			node.es.onopen = function(event) {
-		        node.status({fill:"green", shape: "dot", text: " "});
-	       	};
+		// handle incoming node-red message
+		this.on("input", function(msg) {
 
-			// handle the 'onmessage' event
+            var item = (config.itemname && (config.itemname.length != 0)) ? config.itemname : msg.item;
 			
-	       	node.es.onmessage = function(msg) {
-			    //node.log(msg.data);
-				try
-				{
-        			// update the node status with the Item's new state
-				    msg = JSON.parse(msg.data);
-				    if ( msg.payload && (msg.payload.constructor == String)  )
-				    	msg.payload = JSON.parse(msg.payload);
-				    node.send(msg);
-				}
-				catch(e)
-				{
-					// report an unexpected error
-					node.error("Unexpected Error : " + e)
-			        node.status({fill:"red", shape: "dot", text: "Unexpected Error : " + e});
-				}
-				
-			};
+			indigoController.getDevice(item)
+				.then((res) => {
+					
+					node.status({fill:"green", shape: "dot", text: " "});
+                					msg.payload_in = msg.payload;
+                					msg.payload = JSON.parse(JSON.stringify(res));
+                					node.send(msg);})
+				.catch((err)=>{	
+					node.status({fill:"red", shape: "ring", text: err});
+                					node.warn(err);})
+            
 			
-			// handle the 'onerror' event
-			
-	       	node.es.onerror = function(err) {
-				if( err.type && (JSON.stringify(err.type) === '{}') )
-					return; // ignore
-	       		
-	       		node.warn('ERROR ' +	JSON.stringify(err));
-		        node.status({fill:"red", shape: "dot", text: 'CommunicationError ' + JSON.stringify(err)});
-				
-				
-				if ( err.status )
-				{
-					if ( (err.status == 503) || (err.status == "503") || (err.status == 404) || (err.status == "404") )
-						// the EventSource object has given up retrying ... retry reconnecting after 10 seconds
-						
-						node.es.close();
-						delete node.es;
-						
-				        node.status({fill:"red", shape: "dot", text: 'CommunicationStatus OFF'});
-
-						setTimeout(function() {
-							startEventSource();
-						}, 10000);
-				}
-				else if ( err.type && err.type.code )
-				{
-					// the EventSource object is retrying to reconnect
-				}
-				else
-				{
-					// no clue what the error situation is
-				}
-			  };
-
-		}
-		
-	    //startEventSource();
-		// give the system few seconds 
-		setTimeout(function() {
-			startEventSource();
-		}, 5000);
-
+		});
 		this.on("close", function() {
 			node.log('close');
-			node.es.close();
-	        node.status({fill:"red", shape: "dot", text: 'CommunicationStatus OFF'});
-
 		});
-
 	}
 	//
-	RED.nodes.registerType("indigo-events", IndigoEvents);
+	RED.nodes.registerType("indigo-get-device", IndigoGetDevice);
+
+	function IndigoExecAction(config) {
+		RED.nodes.createNode(this, config);
+		this.name = config.name;
+		var indigoController = RED.nodes.getNode(config.controller);
+		var node = this;
+		
+		// handle incoming node-red message
+		this.on("input", function(msg) {
+
+            var item = (config.itemname && (config.itemname.length != 0)) ? config.itemname : msg.topic;
+			
+			indigoController.execAction(item)
+				.then((res) => {
+					
+					node.status({fill:"green", shape: "dot", text: " "});
+                					msg.payload_in = msg.payload;
+                					msg.payload = JSON.parse(JSON.stringify(res));
+                					node.send(msg);})
+				.catch((err)=>{	
+					node.status({fill:"red", shape: "ring", text: err});
+                					node.warn(err);})
+            
+			
+		});
+		this.on("close", function() {
+			node.log('close');
+		});
+	}
+	//
+	RED.nodes.registerType("indigo-exec-action", IndigoExecAction);
+
+
+	function IndigoGetVariable(config) {
+		RED.nodes.createNode(this, config);
+		this.name = config.name;
+		var indigoController = RED.nodes.getNode(config.controller);
+		var node = this;
+		
+		// handle incoming node-red message
+		this.on("input", function(msg) {
+
+            var item = (config.itemname && (config.itemname.length != 0)) ? config.itemname : msg.item;
+			
+			indigoController.getVariable(item)
+				.then((res) => {
+					
+					node.status({fill:"green", shape: "dot", text: " "});
+                					msg.payload_in = msg.payload;
+                					msg.payload = JSON.parse(JSON.stringify(res));
+                					node.send(msg);})
+				.catch((err)=>{	
+					node.status({fill:"red", shape: "ring", text: err});
+                					node.warn(err);})
+            
+			
+		});
+		this.on("close", function() {
+			node.log('close');
+		});
+	}
+	//
+	RED.nodes.registerType("indigo-get-variable", IndigoGetVariable);
+
+	function IndigoSetVariable(config) {
+		RED.nodes.createNode(this, config);
+		this.name = config.name;
+		var indigoController = RED.nodes.getNode(config.controller);
+		var node = this;
+		
+		// handle incoming node-red message
+		this.on("input", function(msg) {
+
+            var item = (config.itemname && (config.itemname.length != 0)) ? config.itemname : msg.topic;
+			var value = msg.payload;
+			indigoController.setVariable(item, value)
+				.then((res) => {
+					
+					node.status({fill:"green", shape: "dot", text: " "});
+                					msg.payload_in = msg.payload;
+                					msg.payload = JSON.parse(JSON.stringify(res));
+                					node.send(msg);})
+				.catch((err)=>{	
+					node.status({fill:"red", shape: "ring", text: err});
+                					node.warn(err);})
+            
+			
+		});
+		this.on("close", function() {
+			node.log('close');
+		});
+	}
+	//
+	RED.nodes.registerType("indigo-set-variable", IndigoSetVariable);
+
+
 } 
