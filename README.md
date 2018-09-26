@@ -1,7 +1,11 @@
 # node-red-contrib-indigo
 ## Description
 
+<<<<<<< HEAD
 Nodes facilitating the automation of *Indigo* ( <http://www.indigo.org> ) items with Node-RED ( <http://nodered.org> ).
+=======
+Nodes facilitating the automation of *Indigo* ( <http://www.indigodomo.com> ) items with Node-RED ( <http://nodered.org> ).
+>>>>>>> 91ab244d5ef50477964a20ce811476875e5698d2
 
 ## Installation
 
@@ -9,6 +13,7 @@ Nodes facilitating the automation of *Indigo* ( <http://www.indigo.org> ) items 
 $ cd ~/.node-red
 $ npm install node-red-contrib-indigo
 ```
+<<<<<<< HEAD
 
 ## Nodes
 
@@ -106,3 +111,5 @@ Channel 1:
 The input message with addition of :
 - <kbd>msg.payload</kbd> : the item object (name, label, state, ...)
 - <kbd>msg.payload_in</kbd> : copy of incoming message's payload
+=======
+>>>>>>> 91ab244d5ef50477964a20ce811476875e5698d2
