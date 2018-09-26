@@ -1,7 +1,7 @@
 # node-red-contrib-indigo
 ## Description
 
-Nodes facilitating the automation of *Indigo* ( <http://www.indigo.org> ) items with Node-RED ( <http://nodered.org> ).
+Nodes facilitating the automation of *Indigo* ( <http://www.indigodomo.com> ) items with Node-RED ( <http://nodered.org> ).
 
 ## Installation
 
