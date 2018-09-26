@@ -327,28 +327,6 @@
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('indigo-in',{
-        category: 'home automation',
-        color: '#d0adff',
-        defaults: {
-            name:      {value:""},
-		    controller:  {value:"", type:"indigo-controller", required:true},
-		    itemname:  {value:"", required:true},
-        },
-        inputs: 0,
-        outputs: 2,
-        icon: "node-red-contrib-indigo.png",
-        label: function() {
-
-            return(this.name||this.itemname||"indigo in");
-        },
-        oneditprepare: function() {
-        	indigoEditPrepare(this, false);
-        }
-    });
-</script>
-
-<script type="text/javascript">
     RED.nodes.registerType('indigo-get-device',{
         category: 'home automation',
         color: '#d0adff',

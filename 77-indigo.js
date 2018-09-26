@@ -199,47 +199,12 @@ module.exports = function(RED) {
 		this.getActionGroup= function(name){
 			return indigodomo.GetActionGroup(name);
 		};
-		this.control = function(itemname, topic, payload, okCb, errCb) {
-			var url;
+		
 			
-            if ( topic === "ItemUpdate" )
-            {
-            	url = getConnectionString(config) + "/rest/items/" + itemname + "/state";
-            	method = request.put;
-            }
-            else if ( topic === "ItemCommand" )
-            {
-            	url = getConnectionString(config) + "/rest/items/" + itemname;
-            	method = request.post;
-            }
-            else
-            {
-            	url = getConnectionString(config) + "/rest/items/" + itemname;
-            	method = request.get;
-            }
-            
-			method({url: url, body: String(payload)}, function(error, response, body) {
-        		if ( error )
-        		{
-					node.emit('CommunicationError', error);
-        			errCb("request error '" + error + "' on '" + url + "'");					
-        		}
-        		else if ( Math.floor(response.statusCode / 100) != 2 )
-        		{
-					node.emit('CommunicationError', response);
-        			errCb("response error '" + JSON.stringify(response) + "' on '" + url + "'");
-        		}
-        		else
-        		{
-        			okCb(body);
-        		}
-        	});
-			
-		};
+	
 
 		this.on("close", function() {
 			node.log('close');
-			node.es.close();
 			node.emit('CommunicationStatus', "OFF");
 		});
 
@@ -412,7 +377,7 @@ module.exports = function(RED) {
 		this.on("input", function(msg) {
 
             var item = (config.itemname && (config.itemname.length != 0)) ? config.itemname : msg.item;
-			
+			console.log('getting device: ' + item)
 			indigoController.getDevice(item)
 				.then((res) => {
 					
